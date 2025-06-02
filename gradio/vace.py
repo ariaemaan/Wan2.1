@@ -5,6 +5,7 @@ import argparse
 import datetime
 import os
 import sys
+import logging
 
 import imageio
 import numpy as np
@@ -287,6 +288,10 @@ class VACEInference:
 
 
 if __name__ == '__main__':
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info("Starting VACE-WAN Demo script...")
+
     parser = argparse.ArgumentParser(
         description='Argparser for VACE-WAN Demo:\n')
     parser.add_argument(
@@ -331,6 +336,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # Read environment variables
+    server_name_env = os.getenv('SERVER_NAME')
+    server_port_env = os.getenv('SERVER_PORT')
+    root_path_env = os.getenv('ROOT_PATH')
+
+    # Use environment variables if set, otherwise use argparse defaults
+    server_name = server_name_env if server_name_env is not None else args.server_name
+    server_port = int(server_port_env) if server_port_env is not None else args.server_port
+    root_path = root_path_env if root_path_env is not None else args.root_path
+
+    logging.info(f"Server Name: {server_name}")
+    logging.info(f"Server Port: {server_port}")
+    logging.info(f"Root Path: {root_path}")
+
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir, exist_ok=True)
 
@@ -340,10 +359,11 @@ if __name__ == '__main__':
         infer_gr.create_ui()
         infer_gr.set_callbacks()
         allowed_paths = [args.save_dir]
+        logging.info("Launching Gradio demo...")
         demo.queue(status_update_rate=1).launch(
-            server_name=args.server_name,
-            server_port=args.server_port,
-            root_path=args.root_path,
+            server_name=server_name,
+            server_port=server_port,
+            root_path=root_path,
             allowed_paths=allowed_paths,
             show_error=True,
             debug=True)

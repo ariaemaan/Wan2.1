@@ -4,6 +4,7 @@ import os
 import os.path as osp
 import sys
 import warnings
+import logging
 
 import gradio as gr
 
@@ -175,6 +176,21 @@ def _parse_args():
 
 
 if __name__ == '__main__':
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info("Starting t2v_14B_singleGPU script...")
+
+    # Read environment variables
+    server_name_env = os.getenv('SERVER_NAME')
+    server_port_env = os.getenv('SERVER_PORT')
+
+    # Use environment variables if set, otherwise use defaults
+    server_name = server_name_env if server_name_env is not None else '0.0.0.0'
+    server_port = int(server_port_env) if server_port_env is not None else 7860
+
+    logging.info(f"Server Name: {server_name}")
+    logging.info(f"Server Port: {server_port}")
+
     args = _parse_args()
 
     print("Step1: Init prompt_expander...", end='', flush=True)
@@ -203,4 +219,5 @@ if __name__ == '__main__':
     print("done", flush=True)
 
     demo = gradio_interface()
-    demo.launch(server_name="0.0.0.0", share=False, server_port=7860)
+    logging.info("Launching Gradio demo...")
+    demo.launch(server_name=server_name, share=False, server_port=server_port)

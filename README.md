@@ -553,6 +553,34 @@ python generate.py --task t2i-14B --size 1024*1024 --ckpt_dir ./Wan2.1-T2V-14B  
 torchrun --nproc_per_node=8 generate.py --dit_fsdp --t5_fsdp --ulysses_size 8 --base_seed 0 --frame_num 1 --task t2i-14B  --size 1024*1024 --ckpt_dir ./Wan2.1-T2V-14B --prompt '一个朴素端庄的美人' --use_prompt_extend
 ```
 
+## Deployment Configuration
+
+When deploying the Gradio applications (`gradio/vace.py` and `gradio/t2v_14B_singleGPU.py`), you can configure the server settings using environment variables. This is particularly useful when running the applications in containers or behind a reverse proxy.
+
+**Common Environment Variables:**
+
+*   `SERVER_NAME`: Sets the listening IP address for the Gradio server.
+    *   Default for `gradio/vace.py`: Uses the value from the `--server_name` command-line argument, which defaults to `'0.0.0.0'`.
+    *   Default for `gradio/t2v_14B_singleGPU.py`: `'0.0.0.0'`.
+    *   Example: `export SERVER_NAME="127.0.0.1"`
+
+*   `SERVER_PORT`: Sets the listening port for the Gradio server.
+    *   Default for `gradio/vace.py`: Uses the value from the `--server_port` command-line argument, which defaults to `7860`.
+    *   Default for `gradio/t2v_14B_singleGPU.py`: `7860`.
+    *   Example: `export SERVER_PORT="8080"`
+
+**Specific to `gradio/vace.py`:**
+
+*   `ROOT_PATH`: Sets the root path for the Gradio application. This is useful if you are serving the application under a subpath when using a reverse proxy (e.g., `https://yourdomain.com/my-app`).
+    *   Default: Uses the value from the `--root_path` command-line argument, which defaults to `None` (no root path).
+    *   Example: `export ROOT_PATH="/vace-app"`
+
+**Why configure these?**
+
+*   **Containerization:** When running in a Docker container or similar environments, you often need to bind to `0.0.0.0` (`SERVER_NAME`) to make the application accessible from outside the container and map to a specific host port (`SERVER_PORT`).
+*   **Reverse Proxies:** If you place the Gradio app behind a reverse proxy like Nginx or Apache, you might need to configure `SERVER_NAME` (e.g., to `127.0.0.1` if the proxy is on the same machine) and `SERVER_PORT` to an internal port, while the proxy handles external connections. `ROOT_PATH` is essential if the application is not served from the root of the domain (e.g., `yourdomain.com/my-gradio-app/`).
+
+By using these environment variables, you can easily adapt the application's server configuration to various deployment environments without modifying the script's code.
 
 ## Manual Evaluation
 
